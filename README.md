@@ -1,7 +1,3 @@
-<img align="left" height="700" src="https://media1.giphy.com/media/LgwK2o7vXfq6eZHoiq/giphy.gif?cid=790b7611af7857cf770613bae4f2776c8a18662311b273c4&rid=giphy.gif&ct=g"  />
-
-###
-
 <h2 align="left">🍕 Pizza - Food Delivery App</h2>
 
 ###
@@ -26,6 +22,17 @@
 
 ###
 
-<h6 align="left">O client foi desenvolvido de uma forma que pudesse ser testado mesmo sem o server ativo para facilitar aos que não tem conhecimento ou domínio no backend.</h6>
+<h6 align="left">O <b>client</b> foi desenvolvido de uma forma que pudesse ser testado mesmo sem o server ativo para facilitar aos que não tem conhecimento ou domínio no backend.</h6>
 
 ###
+
+<br clear="both">
+
+<h2 align="left">📷 App</h2>
+
+###
+
+<img align="left" height="700" src="https://media2.giphy.com/media/LgwK2o7vXfq6eZHoiq/giphy.gif"  />
+
+###
+Profile Readme Generator
