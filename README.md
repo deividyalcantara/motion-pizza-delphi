@@ -26,6 +26,6 @@
 
 ###
 
-<h6 align="left">O <b>client</b> foi desenvolvido de uma forma que pudesse ser testado mesmo sem o server ativo para facilitar aos que não tem conhecimento ou domínio no backend.</h6>
+<h6 align="left">O client foi desenvolvido de uma forma que pudesse ser testado mesmo sem o server ativo para facilitar aos que não tem conhecimento ou domínio no backend.</h6>
 
 ###
