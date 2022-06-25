@@ -42,7 +42,8 @@
 
 ###
 
+<br clear="both">
+
 <img align="left" height="700" src="https://i.imgur.com/unorYdg.jpg"  />
 
 ###
-Profile Readme Generator
