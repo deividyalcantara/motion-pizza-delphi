@@ -1,0 +1,18 @@
+object FrameOpcoesRecheio: TFrameOpcoesRecheio
+  OnTap = FrameTap
+  Size.Width = 320.000000000000000000
+  Size.Height = 83.000000000000000000
+  Size.PlatformDefault = False
+  OnClick = FrameClick
+  OnResized = FrameResized
+  object hsbRecheio: THorzScrollBox
+    Align = Client
+    HitTest = False
+    Size.Width = 320.000000000000000000
+    Size.Height = 83.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 0
+    Viewport.Width = 320.000000000000000000
+    Viewport.Height = 83.000000000000000000
+  end
+end

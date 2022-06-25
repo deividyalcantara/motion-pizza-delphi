@@ -1,0 +1,159 @@
+unit Pizza.Controllers.Pizza;
+
+interface
+
+uses
+  Pizza.Interfaces.WebClient,
+  Pizza.Interfaces.Configuracoes,
+  Pizza.Interfaces.Manipulacao,
+  Pizza.Librarys.Modelo,
+  FMX.Forms,
+  System.SysUtils,
+  System.JSON;
+
+type
+  WebPizza = record
+    pizza_id: Integer;
+    nome: string;
+    descricao: string;
+    url: string;
+    custos: TArrayOfDouble;
+    qtd_maxima_recheio: Integer;
+  end;
+  TArrayOfWebPizza = Array of WebPizza;
+
+  WebPizzaRecheioAnimacao = record
+    qtd: Integer;
+    width: Integer;
+    height: Integer;
+    diminuir_raio_porc: TArrayOfInteger;
+    tipo_animacao: TArrayOfInteger;
+    primeiro_ao_centro: Boolean;
+    rotacionar: Boolean;
+  end;
+
+  WebPizzaRecheio = record
+    recheio_id: Integer;
+    descricao: string;
+    url: string;
+    url_sobrepor: string;
+    valor: Double;
+    qtd_maxima_disponivel: Integer;
+    animacao: WebPizzaRecheioAnimacao;
+  end;
+  TArrayOfWebPizzaRecheio = Array of WebPizzaRecheio;
+
+function BuscarPizzas(out pizzas: TArrayOfWebPizza; recheios: TArrayOfWebPizzaRecheio; out tamanho: TArrayOfString; out tam_padrao: string): string;
+procedure teste;
+
+implementation
+
+procedure teste;
+var
+  req: TWebClient;
+begin
+  req := TWebClient.Create(Application)
+    .BaseUrl('https://i.ibb.co/')
+    .Prefix(cPrefix)
+    .Get('pizzas');
+end;
+
+function BuscarPizzas(out pizzas: TArrayOfWebPizza; recheios: TArrayOfWebPizzaRecheio; out tamanho: TArrayOfString; out tam_padrao: string): string;
+var
+  req: TWebClient;
+  resultado: TJSONObject;
+
+  procedure DefinirTamanho;
+  begin
+    tamanho := ArrayStringDeObjeto(resultado, 'ordemTamanho');
+  end;
+
+  procedure DefinirPizzas;
+  var
+    cardapio: TJSONArray;
+    i: Integer;
+  begin
+    cardapio := ArrayDeObjetoPar(resultado, 'cardapio');
+
+    if cardapio = nil then
+      Exit;
+
+    SetLength(pizzas, cardapio.Count);
+
+    for i := 0 to cardapio.Count - 1 do begin
+      with pizzas[i] do begin
+        pizza_id := IntDeArrayPar(cardapio, i, 'id');
+        nome := StrDeArrayPar(cardapio, i, 'nome');
+        descricao := StrDeArrayPar(cardapio, i, 'descricao');;
+        url := StrDeArrayPar(cardapio, i, 'url');
+        custos := ArrayDoubleDeArrayPar(cardapio, i, 'custos');
+        qtd_maxima_recheio := IntDeArrayPar(cardapio, i, 'qtdMaximaRecheio', 3);;
+      end;
+    end;
+  end;
+
+  procedure DefinirRecheio;
+  var
+    rec: TJSONArray;
+    anm: TJSONObject;
+    i: Integer;
+  begin
+    rec := ArrayDeObjetoPar(resultado, 'itemRecheio');
+
+    if rec = nil then
+      Exit;
+
+    SetLength(recheios, rec.Count);
+
+    for i := 0 to rec.Count - 1 do begin
+      with recheios[i] do begin
+        recheio_id := IntDeArrayPar(rec, i, 'id');
+        descricao := StrDeArrayPar(rec, i, 'descricao');
+        url := StrDeArrayPar(rec, i, 'url');
+        url_sobrepor := StrDeArrayPar(rec, i, 'urlSobrepor');
+        valor := DoubleDeArrayPar(rec, i, 'valor');
+        qtd_maxima_disponivel := IntDeArrayPar(rec, i, 'qtdMaximaDisponivel');
+
+        anm := ObjetoDeArrayPar(rec, i, 'animacao');
+
+        with animacao do begin
+          qtd := IntDeObjeto(anm, 'quantidade');
+          width := IntDeObjeto(anm, 'width');
+          height := IntDeObjeto(anm, 'height');
+          diminuir_raio_porc := ArrayIntegerDeObjeto(anm, 'diminuirRaioPorc', 15);
+          tipo_animacao := ArrayIntegerDeObjeto(anm, 'tipoAnimacao', 0);
+          primeiro_ao_centro := BolDeObjeto(anm, 'primeiroAoCentro');
+          rotacionar := BolDeObjeto(anm, 'rotacionar');
+        end;
+      end;
+    end;
+  end;
+begin
+  pizzas := nil;
+  tamanho := nil;
+  tam_padrao := 'G';
+
+  req := TWebClient.Create(Application)
+    .BaseUrl(cBaseUrl)
+    .Prefix(cPrefix)
+    .Get('pizzas');
+
+  try
+    if req.Send.has_error then begin
+      Result := '';
+      Exit;
+    end;
+
+    resultado := req.ResponseJSONObject;
+    tam_padrao := StrDeObjeto(resultado, 'tamanhoInicial', 'L');
+
+    DefinirTamanho;
+    DefinirPizzas;
+    DefinirRecheio;
+  finally
+    resultado.Free;
+    req.Free;
+  end;
+end;
+
+end.

@@ -1,0 +1,118 @@
+{
+  "ordemTamanho": ["S", "M", "L"],
+  "tamanhoInicial": "L",   
+  "cardapio": [
+                {
+                  "id": 1,
+                  "nome": "Italian",
+                  "descricao": "tomato sauce & mozzarella",
+                  "url": "https://i.ibb.co/cCW510H/Italian.png",
+                  "custos": [5.60, 7.50, 9.50],
+                  "qtdMaximaRecheio": 3
+                },
+                {
+                  "id": 1,
+                  "nome": "Pepperoni",
+                  "descricao": "pepperoni & tomato sauce",
+                  "url": "https://i.ibb.co/d6Lv3my/Pepperoni.png",
+                  "custos": [5.10, 7.00, 8.90],
+                  "qtdMaximaRecheio": 3
+                },
+                {
+                  "id": 1,
+                  "nome": "Catupiry",
+                  "descricao": "catupiry & tomato sauce",
+                  "url": "https://i.ibb.co/BfDpdHs/Catupiry.png",
+                  "custos": [5.00, 6.90, 8.60],
+                  "qtdMaximaRecheio": 3
+                }                 
+              ],
+  "itemRecheio":[
+                  {
+                    "id": 1,
+                    "descricao": "Mushroom",
+                    "url": "https://i.ibb.co/xYYsVQn/marshmelow.png",
+                    "url_sobrepor": "https://i.ibb.co/FDN3jcZ/cogumelo-un.png",  
+                    "valor": 2.30,
+                    "qtdMaximaDisponivel": 1,
+                    "animacao": { 
+                                  "quantidade": 15, 
+                                  "width": 15,
+                                  "height": 15,
+                                  "diminuirRaioPorc": [15, 15, 15],
+                                  "tipoAnimacao": [0],
+                                  "primeiroAoCentro": "True",
+                                  "rotacionar": "True"                   
+                                }           
+                  },    
+      {"quantidade":15,"Width":15,"height":15,"diminuirRaioPorc":[15,15,15],"tipoAnimacao":[0],"primeiroAoCentro":"True","rotacionar":"True"}
+                  {
+                    "id": 2,
+                    "descricao": "Tomato",
+                    "url": "https://i.ibb.co/xXhpHBT/tomato.png",
+                    "url_sobrepor": "https://i.ibb.co/kJNLvJv/piece-tomato.png",  
+                    "valor": 0.60,
+                    "qtdMaximaDisponivel": 1,
+                    "animacao": { 
+                                  "quantidade": 8, 
+                                  "width": 20,
+                                  "height": 20,
+                                  "diminuirRaioPorc": [15, 15, 15],
+                                  "tipoAnimacao": [0],
+                                  "primeiroAoCentro": "True",
+                                  "rotacionar": "True"                   
+                                }                               
+                  },
+                  {
+                    "id": 3,
+                    "descricao": "Corn",
+                    "url": "https://i.ibb.co/VW7W1rc/corn.png",
+                    "url_sobrepor": "https://i.ibb.co/GQsDyJH/milho-small.png",  
+                    "valor": 0.40,
+                    "qtdMaximaDisponivel": 1,
+                    "animacao": { 
+                                  "quantidade": 100, 
+                                  "width": 4,
+                                  "height": 4,
+                                  "diminuirRaioPorc": [15, 15, 15],
+                                  "tipoAnimacao": [0],
+                                  "primeiroAoCentro": "True",
+                                  "rotacionar": "True"                   
+                                }                      
+                  },   
+                  {
+                    "id": 5,
+                    "descricao": "Fries",
+                    "url": "https://i.ibb.co/CsF0cyb/fries.png",
+                    "url_sobrepor": "https://i.ibb.co/RBgkDrf/batata-frita-small.png",  
+                    "valor": 1.60,
+                    "qtdMaximaDisponivel": 1,
+                    "animacao": { 
+                                  "quantidade": 100, 
+                                  "width": 10,
+                                  "height": 10,
+                                  "diminuirRaioPorc": [15, 15, 15],
+                                  "tipoAnimacao": [0],
+                                  "primeiroAoCentro": "True",
+                                  "rotacionar": "True"                   
+                                }                            
+                  },                                           
+                  {
+                    "id": 6,
+                    "descricao": "Onion",
+                    "url": "https://i.ibb.co/vVQkB03/cebola-inteira.png",
+                    "url_sobrepor": "https://i.ibb.co/CBkFccL/cebola-un.png",  
+                    "valor": 0.40,
+                    "qtdMaximaDisponivel": 1,
+                    "animacao": { 
+                                  "quantidade": 100, 
+                                  "width": 10,
+                                  "height": 10,
+                                  "diminuirRaioPorc": [15, 15, 15],
+                                  "tipoAnimacao": [0],
+                                  "primeiroAoCentro": "True",
+                                  "rotacionar": "True"                   
+                                }                       
+                  }                           
+                ]  
+}

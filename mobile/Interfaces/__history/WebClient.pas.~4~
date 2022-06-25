@@ -1,0 +1,423 @@
+unit WebClient;
+
+interface
+
+uses
+  REST.Client,
+  REST.Types,
+  System.Classes,
+  System.SysUtils,
+  System.JSON,
+  WebClientType;
+
+type
+  TWebClient = class
+  private
+    FRestClient: TRESTClient;
+    FRestRequest: TRESTRequest;
+    FRequestMethod: TRESTRequestMethod;
+    FUri: string;
+    FBaseUrl: string;
+    FPrefix: string;
+    FEncodeAllParameters: TWebClientEncodeAllParameters;
+    FAcceptCharset: string;
+    FAcceptEncoding: string;
+    FContentType: string;
+    FRequestStatus: Integer;
+    FErro: TWebClientErro;
+
+    procedure DefaultSettingWebClient;
+    procedure SetUpPath;
+    procedure CheckError;
+
+    function GetStatusCode: Integer;
+    function GetResponseStringJSON: string;
+    function GetResponse: string;
+    function GetResponseJSONObject: TJSONObject;
+    function GetResponseJSONArray: TJSONArray;
+    function GetParToken: string;
+  public
+    constructor Create(AOwner: TComponent);
+    destructor Destroy; override;
+
+    property RestClient: TRESTClient read FRestClient write FRestClient;
+    property RestRequest: TRESTRequest read FRestRequest write FRestRequest;
+    property StatusCode: Integer read GetStatusCode;
+    property Erro: TWebClientErro read FErro write FErro;
+
+    property ParToken: string read GetParToken;
+
+    property Response: string read GetResponse;
+    property ResponseStringJSON: string read GetResponseStringJSON;
+    property ResponseJSONObject: TJSONObject read GetResponseJSONObject;
+    property ResponseJSONArray: TJSONArray read GetResponseJSONArray;
+
+    function Delete(const caminho: string = ''): THorseWebClient;
+    function Get(const caminho: string = ''): THorseWebClient;
+    function Patch(const caminho: string = ''): THorseWebClient;
+    function Post(const caminho: string = ''): THorseWebClient;
+    function Put(const caminho: string = ''): THorseWebClient;
+
+    function BaseUrl(const base_url: string): THorseWebClient;
+    function Prefix(const prefixo_url: string): THorseWebClient;
+    function Uri(const uri: string): THorseWebClient;
+    function Resource(const resource: string): THorseWebClient;
+
+    function AcceptCharset(const accept_charset: string): THorseWebClient;
+    function AcceptEncoding(const accept_encoding: string): THorseWebClient;
+    function ContentType(const content_type: string): THorseWebClient;
+
+    function Token(token: string): THorseWebClient;
+
+    function EncodeAllParameters(tipo_encode: TWebClientEncodeAllParameters): THorseWebClient;
+
+    function AddParameter(
+      nome: string; valor: string;
+      tipo_parametro: TWebClientRequestParameterKind;
+      encodar_parametro: Boolean = True
+    ): THorseWebClient;
+
+    function AddQuery(nome: string; valor: string; encodar: Boolean = True): THorseWebClient;
+    function AddCookie(nome: string; valor: string; encodar: Boolean = True): THorseWebClient;
+    function AddHeader(nome: string; valor: string; encodar: Boolean = True): THorseWebClient;
+    function AddBody(nome: string; valor: string; encodar: Boolean = True): THorseWebClient;
+    function AddGetOrPost(nome: string; valor: string; encodar: Boolean = True): THorseWebClient;
+    function AddFile(nome: string; valor: string; encodar: Boolean = True): THorseWebClient;
+    function AddUrlSegment(nome: string; valor: string; encodar: Boolean = True): THorseWebClient;
+
+    function ClearParameters: THorseWebClient;
+
+    function Execute: THoseWebClientErro;
+    function Send: THoseWebClientErro;
+  end;
+
+implementation
+
+{ THorseWebClient }
+
+function THorseWebClient.AcceptCharset(const accept_charset: string): THorseWebClient;
+begin
+  FAcceptCharset := accept_charset;
+  Result := Self;
+end;
+
+function THorseWebClient.AcceptEncoding(const accept_encoding: string): THorseWebClient;
+begin
+  FAcceptEncoding := accept_encoding;
+  Result := Self;
+end;
+
+function THorseWebClient.AddBody(nome, valor: string; encodar: Boolean = True): THorseWebClient;
+begin
+  AddParameter(nome, valor, pkREQUESTBODY, encodar);
+  Result := Self;
+end;
+
+function THorseWebClient.AddCookie(nome, valor: string; encodar: Boolean = True): THorseWebClient;
+begin
+  AddParameter(nome, valor, pkCOOKIE, encodar);
+  Result := Self;
+end;
+
+function THorseWebClient.AddFile(nome, valor: string; encodar: Boolean = True): THorseWebClient;
+begin
+  AddParameter(nome, valor, pkFILE, encodar);
+  Result := Self;
+end;
+
+function THorseWebClient.AddGetOrPost(nome, valor: string; encodar: Boolean = True): THorseWebClient;
+begin
+  AddParameter(nome, valor, pkGETorPOST, encodar);
+  Result := Self;
+end;
+
+function THorseWebClient.AddHeader(nome, valor: string; encodar: Boolean = True): THorseWebClient;
+begin
+  AddParameter(nome, valor, pkHTTPHEADER, encodar);
+  Result := Self;
+end;
+
+function THorseWebClient.AddParameter(
+  nome, valor: string;
+  tipo_parametro: TWebClientRequestParameterKind;
+  encodar_parametro: Boolean
+): THorseWebClient;
+  function EncodeOption(encodar: Boolean): TRESTRequestParameterOptions;
+  begin
+    Result := [];
+
+    if FEncodeAllParameters <> eapDefault then begin
+      if FEncodeAllParameters = eapNo then
+        Result := [poDoNotEncode];
+    end;
+
+    if not encodar then
+      Result := [poDoNotEncode]
+    else
+      Result := [];
+  end;
+begin
+  with FRestRequest.Params.AddItem do begin
+    kind := tipo_parametro;
+    Name := nome;
+    Value := valor;
+    Options := EncodeOption(encodar_parametro);
+  end;
+
+  Result := Self;
+end;
+
+function THorseWebClient.AddQuery(nome, valor: string; encodar: Boolean = True): THorseWebClient;
+begin
+  AddParameter(nome, valor, pkQUERY, encodar);
+  Result := Self;
+end;
+
+function THorseWebClient.AddUrlSegment(nome, valor: string; encodar: Boolean = True): THorseWebClient;
+begin
+  AddParameter(nome, valor, pkURLSEGMENT, encodar);
+  Result := Self;
+end;
+
+function THorseWebClient.BaseUrl(const base_url: string): THorseWebClient;
+begin
+  FBaseUrl := Trim(base_url);
+  Result := Self;
+end;
+
+procedure THorseWebClient.CheckError;
+var
+  obj: TJSONObject;
+  erro_verificado: THoseWebClientErro;
+begin
+  FErro := Default(THoseWebClientErro);
+  try
+    try
+      obj := TJSONObject.ParseJSONValue(TEncoding.UTF8.GetBytes(ResponseStringJSON), 0) as TJSONObject;
+      FErro.error := obj.GetValue<string>('error');
+
+      if (FErro.error = '') then
+        Exit;
+
+      FErro.has_error := True;
+      FErro.title := obj.GetValue<string>('title');
+      FErro.&unit := obj.GetValue<string>('unit');
+      FErro.code :=  obj.GetValue<Integer>('code');
+      FErro.status := THTTPStatus(StatusCode);
+      FErro.&type := obj.GetValue<string>('type');
+    except
+    end;
+  finally
+    FreeAndNil(obj);
+  end;
+end;
+
+function THorseWebClient.ClearParameters: THorseWebClient;
+begin
+  FRestRequest.Params.Clear;
+  Result := Self;
+end;
+
+function THorseWebClient.ContentType(const content_type: string): THorseWebClient;
+begin
+  FContentType := content_type;
+  Result := Self;
+end;
+
+constructor THorseWebClient.Create(AOwner: TComponent);
+begin
+  FRestClient := TRESTClient.Create(AOwner);
+  FRestRequest := TRESTRequest.Create(AOwner);
+  FRestRequest.Client := FRestClient;
+  FRequestMethod := TRESTRequestMethod.rmGET;
+
+  DefaultSettingWebClient;
+end;
+
+procedure THorseWebClient.DefaultSettingWebClient;
+begin
+  with FRestClient do begin
+    {$IFDEF MSWINDOWS}
+      BaseURL := 'http://localhost:9000/';
+    {$ELSE}
+      BaseURL := 'http://localhost:9000/';
+    {$ENDIF}
+
+    AcceptCharSet := 'utf-8, *; q=0.8';
+    ContentType := 'application/json';
+  end;
+
+  FEncodeAllParameters := eapDefault;
+  FRequestStatus := -1;
+end;
+
+function THorseWebClient.Delete(const caminho: string): THorseWebClient;
+begin
+  FRequestMethod := rmDELETE;
+  FUri := caminho;
+  Result := Self;
+end;
+
+destructor THorseWebClient.Destroy;
+begin
+  FRestClient.Free;
+  FRestRequest.Free;
+end;
+
+function THorseWebClient.EncodeAllParameters(tipo_encode: TWebClientEncodeAllParameters): THorseWebClient;
+begin
+  FEncodeAllParameters := tipo_encode;
+  Result := Self;
+end;
+
+function THorseWebClient.Execute: THoseWebClientErro;
+begin
+  Result := Send;
+end;
+
+function THorseWebClient.Get(const caminho: string): THorseWebClient;
+begin
+  FRequestMethod := rmGET;
+  FUri := caminho;
+  Result := Self;
+end;
+
+function THorseWebClient.GetParToken: string;
+var
+  res: TJSONValue;
+begin
+  Result := '';
+
+  try
+    res := TJSONObject.ParseJSONValue(TEncoding.UTF8.GetBytes(ResponseStringJSON), 0);
+
+    if res <> nil then
+      Result := res.GetValue<string>('token');
+  finally
+    res.Free;
+  end;
+end;
+
+function THorseWebClient.GetResponseJSONArray: TJSONArray;
+begin
+  try
+    Result := TJSONValue.ParseJSONValue(TEncoding.UTF8.GetBytes(ResponseStringJSON), 0) as TJSONArray;
+  except
+    Result := TJSONArray.Create;
+  end;
+end;
+
+function THorseWebClient.GetResponseJSONObject: TJSONObject;
+begin
+  try
+    Result := TJSONValue.ParseJSONValue(TEncoding.UTF8.GetBytes(ResponseStringJSON), 0) as TJSONObject;
+  except
+    Result := TJSONObject.Create;
+  end;
+end;
+
+function THorseWebClient.GetResponse: string;
+begin
+  Result := FRestRequest.Response.Content;
+end;
+
+function THorseWebClient.GetResponseStringJSON: string;
+begin
+  Result := FRestRequest.Response.JSONText;
+end;
+
+function THorseWebClient.GetStatusCode: Integer;
+begin
+  Result := FRestRequest.Response.StatusCode;
+end;
+
+function THorseWebClient.Patch(const caminho: string): THorseWebClient;
+begin
+  FRequestMethod := rmPATCH;
+  FUri := caminho;
+  Result := Self;
+end;
+
+function THorseWebClient.Post(const caminho: string): THorseWebClient;
+begin
+  FRequestMethod := rmPOST;
+  FUri := caminho;
+  Result := Self;
+end;
+
+function THorseWebClient.Prefix(const prefixo_url: string): THorseWebClient;
+begin
+  FPrefix := Trim(prefixo_url);
+  Result := Self;
+end;
+
+function THorseWebClient.Put(const caminho: string): THorseWebClient;
+begin
+  FRequestMethod := rmPUT;
+  FUri := caminho;
+  Result := Self;
+end;
+
+function THorseWebClient.Resource(const resource: string): THorseWebClient;
+begin
+  Result := Uri(resource);
+end;
+
+function THorseWebClient.Send: THoseWebClientErro;
+  procedure AddErro(
+    titulo_erro: string;
+    mensagem_erro: string;
+    &unit: string;
+    codigo_erro: Integer;
+    status_code: Integer;
+    &type: string
+  );
+  begin
+    FErro.has_error := True;
+    FErro.error := mensagem_erro;
+    FErro.title := titulo_erro;
+    FErro.&unit := &unit;
+    FErro.code := codigo_erro;
+    FErro.status := THTTPStatus(status_code);
+    FErro.&type := &type;
+
+    Result := FErro;
+  end;
+begin
+  Result := Default(THoseWebClientErro);
+
+  try
+    SetUpPath;
+    FRestRequest.Execute;
+
+    if (StatusCode < 200) or (StatusCode > 299) then begin
+      CheckError;
+      Result := FErro;
+    end;
+  except on e: Exception do
+    begin
+      AddErro('Internal', e.Message, '', -1, StatusCode, '');
+    end;
+  end;
+end;
+
+procedure THorseWebClient.SetUpPath;
+begin
+  FRestClient.BaseURL := FBaseUrl;
+  FRestRequest.Method := FRequestMethod;
+  FRestRequest.Resource := FPrefix + FUri;
+end;
+
+function THorseWebClient.Token(token: string): THorseWebClient;
+begin
+  AddQuery('Authorization', 'Bearer ' + token, false);
+  Result := Self;
+end;
+
+function THorseWebClient.Uri(const uri: string): THorseWebClient;
+begin
+  FUri := Trim(uri);
+  Result := Self;
+end;
+
+end.

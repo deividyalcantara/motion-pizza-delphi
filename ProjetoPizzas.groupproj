@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{CBA34073-3EA8-4459-8F25-A447ADC820BB}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="mobile\Pizza.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="server\PizzaServer.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="Pizza">
+        <MSBuild Projects="mobile\Pizza.dproj"/>
+    </Target>
+    <Target Name="Pizza:Clean">
+        <MSBuild Projects="mobile\Pizza.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="Pizza:Make">
+        <MSBuild Projects="mobile\Pizza.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="PizzaServer">
+        <MSBuild Projects="server\PizzaServer.dproj"/>
+    </Target>
+    <Target Name="PizzaServer:Clean">
+        <MSBuild Projects="server\PizzaServer.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="PizzaServer:Make">
+        <MSBuild Projects="server\PizzaServer.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="Pizza;PizzaServer"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="Pizza:Clean;PizzaServer:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="Pizza:Make;PizzaServer:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

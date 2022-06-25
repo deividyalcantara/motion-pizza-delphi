@@ -1,0 +1,36 @@
+unit View.Frame.Opcoes.Recheio;
+
+interface
+
+uses
+  System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants, 
+  FMX.Types, FMX.Graphics, FMX.Controls, FMX.Forms, FMX.Dialogs, FMX.StdCtrls,
+  FMX.Layouts, View.Frame.Recheio, FMX.Objects;
+
+type
+  TFrameOpcoesRecheio = class(TFrame)
+    hsbRecheio: THorzScrollBox;
+  private
+    { Private declarations }
+  public
+    procedure AddItem;
+  end;
+
+implementation
+
+{$R *.fmx}
+
+{ TFrameOpcoesRecheio }
+
+procedure TFrameOpcoesRecheio.AddItem;
+var
+  recheio: TFormRecheio;
+begin
+  recheio := TFormRecheio.Create(hsbRecheio);
+  recheio.Parent := hsbRecheio;
+  racheio.FloatAnimation3.Start;
+  recheio.Name := 'lbl' + IntToStr(Random(99999));
+  recheio.Align := TAlignLayout.MostLeft;
+end;
+
+end.

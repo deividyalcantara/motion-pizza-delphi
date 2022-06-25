@@ -1,0 +1,11 @@
+unit Pizza.Interfaces.Configuracoes;
+
+interface
+
+const
+  cBaseUrl = 'http://localhost:9000/';
+  cPrefix  = 'api/v1/';
+
+implementation
+
+end.

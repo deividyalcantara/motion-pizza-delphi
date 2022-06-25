@@ -1,0 +1,277 @@
+unit Pizza.View.Frame.Base.Recheio;
+
+interface
+
+uses
+  System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants, 
+  FMX.Types, FMX.Graphics, FMX.Controls, FMX.Forms, FMX.Dialogs, FMX.StdCtrls, FMX.Ani,
+  Pizza.View.Frame.Recheio;
+
+type
+  TRecheioDirecao = (rdEsquerda, rdDireita);
+
+  WebBaseRecheioPontos = record
+    ponto: Integer;
+    top: Integer;
+    bottom: Integer;
+    left: Integer;
+    right: Integer;
+  end;
+  TArrayOfWebBaseRecheioPontos = Array of WebBaseRecheioPontos;
+
+  WebItensRecheio = record
+    recheio: TFormRecheio;
+  end;
+  TArrayOfIWebtensRecheio = Array of WebItensRecheio;
+
+  TFormBaseRecheio = class(TFrame)
+    procedure FrameResize(Sender: TObject);
+  private
+    FPontos: TArrayOfWebBaseRecheioPontos;
+    FItemTamanho: Integer;
+    FItemTamanhoAcrescimo: Integer;
+    FItens: TArrayOfIWebtensRecheio;
+
+    function NomeExistente(name: string): Boolean;
+    procedure NovoRecheio(posicao: Integer);
+    procedure LimparItens(direcao: TRecheioDirecao);
+    procedure ReprocessarItens;
+  public
+    procedure CalcularPontos;
+    procedure Inserir;
+    procedure Rodar(direcao: TRecheioDirecao);
+
+    procedure Avancar;
+    procedure Retornar;
+    function EmExecucao: Boolean;
+  end;
+
+implementation
+
+{$R *.fmx}
+
+uses Pizza.Librarys.Biblioteca;
+
+{ TFrmBaseRecheio }
+
+const
+  cPontoPrimeiro = 0;
+  cPonto1        = 0;
+  cPonto2        = 1;
+  cPonto3        = 2;
+  cPonto4        = 3;
+  cPonto5        = 4;
+  cPonto6        = 5;
+  cPonto7        = 6;
+  cPontoUltimo   = 6;
+
+procedure TFormBaseRecheio.Avancar;
+begin
+  NovoRecheio(cPonto1);
+end;
+
+procedure TFormBaseRecheio.CalcularPontos;
+var
+  tam_ponto: Integer;
+  tam_ponto_lateral: Integer;
+  tam_ponto_acrescimo: Integer;
+begin
+  tam_ponto := Round(Self.Width / 4);
+  tam_ponto_acrescimo := Porcento(10, tam_ponto);
+  tam_ponto := Round((Self.Width - tam_ponto_acrescimo) / 4);
+  tam_ponto_lateral := Round(tam_ponto / 2);
+
+  FItemTamanho := tam_ponto;
+  FItemTamanhoAcrescimo := tam_ponto_acrescimo;
+
+  // Ponto 0
+  SetLength(FPontos, Length(FPontos) + 7);
+  FPontos[cPonto1].ponto := (tam_ponto_lateral - (tam_ponto * 2));
+  FPontos[cPonto2].ponto := (tam_ponto_lateral - tam_ponto);
+  FPontos[cPonto3].ponto := tam_ponto_lateral;
+  FPontos[cPonto4].ponto := tam_ponto_lateral + tam_ponto;
+  FPontos[cPonto5].ponto := (tam_ponto_acrescimo + tam_ponto_lateral + (tam_ponto * 2));
+  FPontos[cPonto6].ponto := (tam_ponto_lateral + (tam_ponto * 3));
+  FPontos[cPonto7].ponto := (tam_ponto_lateral + (tam_ponto * 4));
+
+  FPontos[cPonto1].top := Porcento(30, Round(Self.Height)) * -1;
+  FPontos[cPonto2].top := Porcento(15, Round(Self.Height)) * -1;
+  FPontos[cPonto3].top := Porcento(15, Round(Self.Height));
+  FPontos[cPonto4].top := Porcento(30, Round(Self.Height));
+  FPontos[cPonto5].top := Porcento(15, Round(Self.Height));
+  FPontos[cPonto6].top := Porcento(15, Round(Self.Height)) * -1;
+  FPontos[cPonto7].top := Porcento(30, Round(Self.Height)) * -1;
+
+  FPontos[cPonto1].left := 0;
+  FPontos[cPonto2].left := 0;
+  FPontos[cPonto3].left := 0;
+  FPontos[cPonto4].left := -5;
+  FPontos[cPonto5].left := 0;
+  FPontos[cPonto6].left := 0;
+  FPontos[cPonto7].left := 0;
+
+  FPontos[cPonto1].right := 0;
+  FPontos[cPonto2].right := 0;
+  FPontos[cPonto3].right := 0;
+  FPontos[cPonto4].right := -5;
+  FPontos[cPonto5].right := 0;
+  FPontos[cPonto6].right := 0;
+  FPontos[cPonto7].right := 0;  
+end;
+
+function TFormBaseRecheio.EmExecucao: Boolean;   
+var
+  i: Integer;
+begin
+  Result := False;
+  
+  for i := Low(FItens) to High(FItens) do begin
+    if FItens[i].recheio.anmDirecao.Running then begin
+      Result := True;
+      Break;
+    end;
+  end;
+end;
+
+procedure TFormBaseRecheio.FrameResize(Sender: TObject);
+begin
+  CalcularPontos;
+  ReprocessarItens;
+end;
+
+procedure TFormBaseRecheio.Inserir;
+var
+  i: Integer;
+begin
+  for i := cPonto2 to cPonto6 do
+    NovoRecheio(i);
+
+  LimparItens(rdDireita);  
+end;
+
+procedure TFormBaseRecheio.LimparItens(direcao: TRecheioDirecao);
+var
+  i: Integer;
+  itens_reprocessados: TArrayOfIWebtensRecheio;
+begin
+  for i := Low(FItens) to High(FItens) do begin
+    if Em(FItens[i].recheio.Posicao, [cPonto1, cPonto7]) then
+      Continue;
+      
+    SetLength(itens_reprocessados, Length(itens_reprocessados) + 1);
+    itens_reprocessados[High(itens_reprocessados)] := FItens[i];
+  end;
+
+  FItens := itens_reprocessados;
+end;
+
+function TFormBaseRecheio.NomeExistente(name: string): Boolean;
+var
+  i: Integer;
+begin
+  Result := False;
+  for i := Low(FItens) to High(FItens) do begin
+    if FItens[i].recheio.Name <> name then
+      Continue;
+
+    Result := True;
+    Break;
+  end;
+end;
+
+procedure TFormBaseRecheio.NovoRecheio(posicao: Integer);
+var
+  recheio: TFormRecheio;
+  nome_gerado: string;
+begin
+  recheio := TFormRecheio.Create(Application);
+  recheio.Parent := Self;
+
+  repeat
+    nome_gerado := 'lblRecheio' + IntToStr(random(99999));
+  until not NomeExistente(nome_gerado);
+
+  recheio.Name := nome_gerado;
+  recheio.Position.X := FPontos[posicao].ponto;
+  recheio.Width := FItemTamanho;
+  recheio.Height := Self.Height;
+  recheio.Align := TAlignLayout.Scale;
+  recheio.Posicao := posicao;
+
+  if posicao = cPonto4 then
+    recheio.Width := recheio.Width + FItemTamanhoAcrescimo;
+
+  SetLength(FItens, Length(FItens) + 1);
+  FItens[High(FItens)].recheio := recheio;
+
+  recheio.imgRecheio.Margins.Top := FPontos[posicao].top;
+  recheio.Atualizar;
+end;
+
+procedure TFormBaseRecheio.ReprocessarItens;
+var
+  i: Integer;
+begin
+  for i := Low(FItens) to High(FItens) do begin
+    if FItens[i].recheio.Posicao = cPonto4 then
+      FItens[i].recheio.Width :=  FItemTamanho + FItemTamanhoAcrescimo
+    else
+      FItens[i].recheio.Width := FItemTamanho;
+
+    FItens[i].recheio.imgRecheio.BeginUpdate;
+    FItens[i].recheio.imgRecheio.Margins.Top := FPontos[FItens[i].recheio.Posicao].top;
+    FItens[i].recheio.imgRecheio.Margins.Left := FPontos[FItens[i].recheio.Posicao].Left;    
+    FItens[i].recheio.imgRecheio.Margins.Right := FPontos[FItens[i].recheio.Posicao].Right;        
+    FItens[i].recheio.imgRecheio.EndUpdate;    
+  end;
+end;
+
+procedure TFormBaseRecheio.Retornar;
+begin
+  NovoRecheio(cPonto7);
+end;
+
+procedure TFormBaseRecheio.Rodar(direcao: TRecheioDirecao);
+var
+  i: Integer;
+begin
+  if EmExecucao then
+    Exit;
+
+  if direcao = rdDireita then
+    Avancar
+  else
+    Retornar;
+
+  for i := Low(FItens) to High(FItens) do begin
+    with FItens[i].recheio.anmDirecao do begin
+      StartValue := FItens[i].recheio.imgRecheio.Position.X;
+      StopValue := FItens[i].recheio.imgRecheio.Position.X + FItens[i].recheio.imgRecheio.Width;
+    end;
+
+    with FItens[i].recheio.anmTamanho do begin
+      StartValue := FItens[i].recheio.imgRecheio.Width;
+
+      if FItens[i].recheio.Posicao + 1 = cPonto4 then
+        StopValue := FItemTamanho + FItemTamanhoAcrescimo
+      else
+        StopValue := FItemTamanho;
+    end;
+    
+    with FItens[i].recheio.anmMarginTop do begin
+      StartValue := FItens[i].recheio.imgRecheio.Margins.Top;
+      StopValue := FPontos[IIfInt((FItens[i].recheio.Posicao + 1) > High(FPontos), High(FPontos), FItens[i].recheio.Posicao + 1)].top;
+    end;
+
+    FItens[i].recheio.anmDirecao.Start;
+    FItens[i].recheio.anmTamanho.Start;
+    FItens[i].recheio.anmMarginTop.Start;
+    FItens[i].recheio.Posicao := FItens[i].recheio.Posicao + 1;
+    FItens[i].recheio.imgRecheio.BeginUpdate;
+    FItens[i].recheio.imgRecheio.EndUpdate;
+  end;
+
+  LimparItens(direcao);
+end;
+
+end.

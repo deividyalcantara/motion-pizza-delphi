@@ -1,0 +1,11 @@
+unit Pizza.Librarys.Modelo;
+
+interface
+
+const
+  lmCorBotaoPadrao      = $FFA4A4A4;
+  lmCorBotaoSelecionado = $FFFFFFFF;
+
+implementation
+
+end.

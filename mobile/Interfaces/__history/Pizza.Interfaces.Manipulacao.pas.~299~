@@ -1,0 +1,213 @@
+unit Pizza.Interfaces.Manipulacao;
+
+interface
+
+uses
+  System.JSON,
+  System.SysUtils,
+  System.Generics.Collections,
+  Pizza.Librarys.Modelo;
+
+function CriarObjeto(value: string): TJSONObject;
+function CriarArray(value: string): TJSONArray;
+
+function ArrayDeObjetoPar(objeto: TJSONObject; par: string): TJSONArray;
+
+function StrDeArray(objeto: TJSONArray; posicao: Integer; default: string = ''): string;
+function IntDeArray(objeto: TJSONArray; posicao: Integer; default: Integer = 0): Integer;
+function DoubleDeArray(objeto: TJSONArray; posicao: Integer; default: Double = 0): Double;
+function StrDeArrayPar(objeto: TJSONArray; posicao: Integer; par: string; default: string = ''): string;
+function IntDeArrayPar(objeto: TJSONArray; posicao: Integer; par: string; default: Integer = 0): Integer;
+function DoubleDeArrayPar(objeto: TJSONArray; posicao: Integer; par: string; default: Double = 0): Double;
+function ArrayDoubleDeArrayPar(objeto: TJSONArray; posicao: Integer; par: string; default: Double = 0): TArrayOfDouble;
+function ArrayIntegerDeArrayPar(objeto: TJSONArray; posicao: Integer; par: string; default: Integer = 0): TArrayOfInteger;
+function ObjetoDeArrayPar(objeto: TJSONArray; posicao: Integer; par: string): TJSONObject;
+
+function StrDeObjeto(objeto: TJSONObject; par: string; default: string = ''): string;
+function IntDeObjeto(objeto: TJSONObject; par: string; default: Integer = 0): Integer;
+function BolDeObjeto(objeto: TJSONObject; par: string; default: Boolean = False): Boolean;
+function ArrayIntegerDeObjeto(objeto: TJSONObject; par: string; default: Integer = 0): TArrayOfInteger;
+function ArrayStringDeObjeto(objeto: TJSONObject; par: string; default: string = ''): TArrayOfString;
+
+implementation
+
+function ArrayStringDeObjeto(objeto: TJSONObject; par: string; default: string = ''): TArrayOfString;
+var
+  i: Integer;
+begin
+  Result := nil;
+  try
+    SetLength(Result, objeto.GetValue<TJSONArray>(par).Count);
+    for i := 0 to objeto.GetValue<TJSONArray>(par).Count - 1 do 
+      Result[i] := StrDeArray(objeto.GetValue<TJSONArray>(par), i);  
+  except
+  end;
+end;
+
+function ArrayIntegerDeObjeto(objeto: TJSONObject; par: string; default: Integer = 0): TArrayOfInteger;
+var
+  i: Integer;
+begin
+  Result := nil;
+  try
+    SetLength(Result, objeto.GetValue<TJSONArray>(par).Count);
+    for i := 0 to objeto.GetValue<TJSONArray>(par).Count - 1 do 
+      Result[i] := IntDeArray(objeto.GetValue<TJSONArray>(par), i);  
+  except
+  end;
+end;
+
+function BolDeObjeto(objeto: TJSONObject; par: string; default: Boolean = False): Boolean;
+begin
+  try
+    Result := objeto.GetValue<Boolean>(par);
+  except
+    Result := default;
+  end;
+end;
+
+function IntDeObjeto(objeto: TJSONObject; par: string; default: Integer = 0): Integer;
+begin
+  try
+    Result := objeto.GetValue<Integer>(par);
+  except
+    Result := default;
+  end;
+end;
+
+function ArrayIntegerDeArrayPar(objeto: TJSONArray; posicao: Integer; par: string; default: Integer = 0): TArrayOfInteger;
+var
+  obj: TJSONObject;
+  arr: TJSONArray;
+  i: Integer;
+begin
+  Result := nil;
+  obj := nil;
+  try
+    obj := objeto.Items[posicao].GetValue<TJSONObject>;
+    arr := obj.GetValue<TJSONArray>(par);
+
+    for i := 0 to arr.Count - 1 do begin
+      SetLength(Result, Length(Result) + 1);
+      Result[High(Result)] := IntDeArray(arr, i, default);
+    end;
+  finally 
+    obj.Free;
+  end;
+end;
+
+function ArrayDoubleDeArrayPar(objeto: TJSONArray; posicao: Integer; par: string; default: Double = 0): TArrayOfDouble;
+var
+  i: Integer;
+begin
+  Result := nil;
+  
+  try
+    for i := 0 to objeto.Items[posicao].GetValue<TJSONObject>.GetValue<TJSONArray>(par).Count - 1 do begin
+      SetLength(Result, Length(Result) + 1);
+      Result[High(Result)] := DoubleDeArray(objeto.Items[posicao].GetValue<TJSONObject>.GetValue<TJSONArray>(par), i, default);
+    end;
+  finally
+  end;
+end;
+
+function StrDeObjeto(objeto: TJSONObject; par: string; default: string = ''): string;
+begin
+  try
+    Result := objeto.GetValue<string>(par);
+  except
+    Result := default;
+  end;
+end;
+
+function StrDeArray(objeto: TJSONArray; posicao: Integer; default: string = ''): string;
+begin
+  try
+    Result := objeto.Items[posicao].GetValue<string>;
+  except
+    Result := default;
+  end;
+end;
+
+function StrDeArrayPar(objeto: TJSONArray; posicao: Integer; par: string; default: string = ''): string; overload;
+begin
+  try
+    Result := objeto.Items[posicao].GetValue<string>(par);
+  except
+    Result := default;
+  end;
+end;
+
+function DoubleDeArray(objeto: TJSONArray; posicao: Integer; default: Double = 0): Double;
+begin
+  try
+    Result := objeto.Items[posicao].GetValue<Double>;
+  except
+    Result := default;
+  end;
+end;
+
+function IntDeArray(objeto: TJSONArray; posicao: Integer; default: Integer = 0): Integer;
+begin
+  try
+    Result := objeto.Items[posicao].GetValue<Integer>;
+  except
+    Result := default;
+  end;
+end;
+
+function IntDeArrayPar(objeto: TJSONArray; posicao: Integer; par: string; default: Integer = 0): Integer;
+begin
+  try
+    Result := objeto.Items[posicao].GetValue<Integer>(par);
+  except
+    Result := default;
+  end;
+end;
+
+function DoubleDeArrayPar(objeto: TJSONArray; posicao: Integer; par: string; default: Double = 0): Double;
+begin
+  try
+    Result := objeto.Items[posicao].GetValue<Double>(par);
+  except
+    Result := default;
+  end;
+end;
+
+function ObjetoDeArrayPar(objeto: TJSONArray; posicao: Integer; par: string): TJSONObject;
+begin
+  try
+    Result := objeto.Items[posicao].GetValue<TJSONObject>(par);
+  except
+    Result := nil;
+  end;
+end;
+
+function ArrayDeObjetoPar(objeto: TJSONObject; par: string): TJSONArray;
+begin
+  try
+    Result := objeto.GetValue<TJSONArray>(par);
+  except
+    Result := TJSONArray.Create;
+  end;
+end;
+
+function CriarObjeto(value: string): TJSONObject;
+begin
+  try
+    Result := TJSONValue.ParseJSONValue(TEncoding.UTF8.GetBytes(value), 0) as TJSONObject;
+  except
+    Result := nil;
+  end;
+end;
+
+function CriarArray(value: string): TJSONArray;
+begin
+  try
+    Result := TJSONValue.ParseJSONValue(TEncoding.UTF8.GetBytes(value), 0) as TJSONArray;
+  except
+    Result := nil;
+  end;
+end;
+
+end.

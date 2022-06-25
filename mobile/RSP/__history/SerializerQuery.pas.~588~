@@ -1,0 +1,708 @@
+unit SerializerQuery;
+
+interface
+
+uses
+  _Modelo, _Conexao, JSON, Data.DB, _Biblioteca;
+
+type
+  TTypeFormatoTexto = (ftMaiuscula, ftMinuscula, ftNormal);
+
+  WebSerializerColunasNomes = record
+    nome_real: string;
+    nome_par: string;
+  end;
+  TArrayOfTWebSerializerColunasNomes = Array of WebSerializerColunasNomes;
+
+  WebSerializerColunasFilhos = record
+    nome_par: string;
+    nomes_colunas_filhos: TArrayOfString;
+    nomes_par_filhos: TArrayOfString;
+  end;
+  TArrayOfWebSerializerColunasFilhos = Array Of WebSerializerColunasFilhos;
+
+  TSerializerQuery = class
+    private
+      FConsulta: TConsulta;
+      FRetornoJSONObject: TJSONObject;
+      FRetornoJSONArray: TJSONArray;
+      FRetornoString: string;
+      FColunasOculta: TArrayOfString;
+      FColunasOrdem: TArrayOfString;
+      FColunasNomes: TArrayOfTWebSerializerColunasNomes;
+      FTiposEncodar: TArrayOfString;
+      FFormatoDataHora: string;
+      FFormatoData: string;
+      FFormatoHora: string;
+      FColunasFilhos: TArrayOfWebSerializerColunasFilhos;
+      FFormatoTexto: TTypeFormatoTexto;
+
+      procedure Inicializar;
+      procedure OrdernamentoPadrao;
+      procedure OrdernamentoFilho;
+
+      function ColunaOcultada(coluna: string): Boolean;
+      function ColunaFilhoUtilizada(coluna: string): Boolean;
+      function ColunaParFilhoUtilizada(nome_par: string): WebSerializerColunasFilhos;
+
+      function ColunaNomePar(coluna: string): string;
+      function Encodar(coluna: string; valor: string): string;
+
+      procedure SetAsJSONArray(x: TJSONArray);
+      function GetAsJSONArray: TJSONArray;
+      procedure SetAsJSONObject(x: TJSONObject);
+      function GetAsJSONObject: TJSONObject;
+      procedure SetAsString(x: string);
+      function GetAsString: string;
+      function GetFFormatoDataHora: string;
+      procedure SetFFormatoDataHora(const x: string);
+      function GetFFormatoData: string;
+      procedure SetFFormatoData(const x: string);
+      function GetFFormatoHora: string;
+      procedure SetFFormatoHora(const x: string);
+      function GetFFormatoTexto: TTypeFormatoTexto;
+      procedure SetFFormatoTexto(const x: TTypeFormatoTexto);
+
+    public
+      constructor Create(var consulta: TConsulta);
+      destructor Destroy; override;
+
+      procedure Serializar;
+
+      procedure Ordem(nome_coluna: string); overload;
+      procedure Ordem(nomes_colunas: TArrayOfString); overload;
+
+      procedure Ocultar(nome_coluna: string); overload;
+      procedure Ocultar(nomes_colunas: TArrayOfString); overload;
+      procedure LimparColunasOcultas;
+
+      procedure EncodarColuna(coluna: string); overload;
+      procedure EncodarColuna(colunas: Array of string); overload;
+
+      procedure RenomearPar(nome_coluna: string; nome_par: string); overload;
+      procedure RenomearPar(nome_coluna: TArrayOfString; nome_par: TArrayOfString); overload;
+
+      procedure AddPar(nome_par: string; colunas: TArrayOfString; nomes: TArrayOfString);
+
+      property AsJSONArray: TJSONArray read GetAsJSONArray write SetAsJSONArray;
+      property AsJSONObject: TJSONObject read GetAsJSONObject write SetAsJSONObject;
+      property AsString: string read GetAsString write SetAsString;
+      property FormatoDataHora: string read GetFFormatoDataHora write SetFFormatoDataHora;
+      property FormatoData: string read GetFFormatoData write SetFFormatoData;
+      property FormatoHora: string read GetFFormatoHora write SetFFormatoHora;
+      property FormatoTexto: TTypeFormatoTexto read GetFFormatoTexto write SetFFormatoTexto;
+
+  end;
+
+implementation
+
+uses
+  System.SysUtils;
+
+{ TSerializerQuery }
+
+procedure TSerializerQuery.AddPar(
+  nome_par: string;
+  colunas, nomes: TArrayOfString
+);
+var
+  y: Integer;
+  existente: Boolean;
+begin
+  if (colunas = nil) and (nomes = nil) then
+    Exit;
+
+  existente := False;
+  for y := Low(FColunasFilhos) to High(FColunasFilhos) do begin
+    if FColunasFilhos[y].nome_par <> nome_par then
+      Continue;
+
+    existente := True;
+    Break;
+  end;
+
+  if existente then
+    Exit;
+
+  SetLength(FColunasFilhos, Length(FColunasFilhos) + 1);
+  FColunasFilhos[High(FColunasFilhos)].nome_par := nome_par;
+  FColunasFilhos[High(FColunasFilhos)].nomes_colunas_filhos := colunas;
+  FColunasFilhos[High(FColunasFilhos)].nomes_par_filhos := IIfArrayOfStr(nomes <> nil, nomes, colunas);
+end;
+
+function TSerializerQuery.ColunaFilhoUtilizada(coluna: string): Boolean;
+var
+  k: Integer;
+  y: Integer;
+  existente: Boolean;
+begin
+  Result := False;
+  existente := False;
+  for k := Low(FColunasFilhos) to High(FColunasFilhos) do begin
+    with FColunasFilhos[k] do begin
+      for y := Low(nomes_colunas_filhos) to High(nomes_colunas_filhos) do begin
+        if nomes_colunas_filhos[y] <> coluna then
+          Continue;
+
+        Result := True;
+        Break
+      end;
+    end;
+
+    if existente then
+      Break;
+  end;
+end;
+
+function TSerializerQuery.ColunaNomePar(coluna: string): string;
+var
+  k: Integer;
+begin
+  Result := coluna;
+
+  if FColunasNomes = nil then
+    Exit;
+
+  for k := Low(FColunasNomes) to High(FColunasNomes) do begin
+    if FColunasNomes[k].nome_real <> coluna then
+      Continue;
+
+    if FColunasNomes[k].nome_par = '' then
+      Exit;
+
+    Result := FColunasNomes[k].nome_par;
+    Break;
+  end;
+end;
+
+function TSerializerQuery.ColunaOcultada(coluna: string): Boolean;
+var
+  k: Integer;
+begin
+  Result := False;
+
+  for k := Low(FColunasOculta) to High(FColunasOculta) do begin
+    if FColunasOculta[k] <> coluna then
+      Continue;
+
+    Result := True;
+    Break;
+  end;
+end;
+
+function TSerializerQuery.ColunaParFilhoUtilizada(nome_par: string): WebSerializerColunasFilhos;
+var
+  k: Integer;
+begin
+  Result := Default(WebSerializerColunasFilhos);
+  for k := Low(FColunasFilhos) to High(FColunasFilhos) do begin
+    if FColunasFilhos[k].nome_par <> nome_par then
+      Continue;
+
+    Result := FColunasFilhos[k];
+    Break
+  end;
+end;
+
+constructor TSerializerQuery.Create(var consulta: TConsulta);
+begin
+  Inicializar;
+  FConsulta := consulta;
+end;
+
+destructor TSerializerQuery.Destroy;
+begin
+  FRetornoJSONArray.Free;
+  FRetornoJSONObject.Free;
+end;
+
+function TSerializerQuery.Encodar(coluna: string; valor: string): string;
+var
+  k: Integer;
+begin
+  Result := valor;
+
+  for k := Low(FTiposEncodar) to High(FTiposEncodar) do begin
+    if FTiposEncodar[k] <> coluna then
+      Continue;
+
+    Result := _Biblioteca.EncodeBase64(valor);
+    Break;
+  end;
+end;
+
+procedure TSerializerQuery.EncodarColuna(colunas: array of string);
+var
+  k: Integer;
+  y: Integer;
+  existente: Boolean;
+begin
+  for k := Low(colunas) to High(colunas) do begin
+    existente := False;
+    for y := Low(FTiposEncodar) to High(FTiposEncodar) do begin
+      if FTiposEncodar[y] <> colunas[k] then
+        Continue;
+
+      existente := True;
+      Break
+    end;
+
+    if existente then
+      Continue;
+
+    SetLength(FTiposEncodar, Length(FTiposEncodar) + 1);
+    FTiposEncodar[High(FTiposEncodar)] := colunas[k];
+  end;
+end;
+
+procedure TSerializerQuery.EncodarColuna(coluna: string);
+begin
+  EncodarColuna([coluna]);
+end;
+
+function TSerializerQuery.GetAsJSONArray: TJSONArray;
+begin
+  Result := FRetornoJSONArray;
+end;
+
+function TSerializerQuery.GetAsJSONObject: TJSONObject;
+begin
+  Result := FRetornoJSONObject;
+end;
+
+function TSerializerQuery.GetAsString: string;
+begin
+  Result := FRetornoString;
+end;
+
+function TSerializerQuery.GetFFormatoData: string;
+begin
+  Result := FFormatoData;
+end;
+
+function TSerializerQuery.GetFFormatoDataHora: string;
+begin
+  Result := FFormatoDataHora;
+end;
+
+function TSerializerQuery.GetFFormatoHora: string;
+begin
+  Result := FFormatoHora;
+end;
+
+function TSerializerQuery.GetFFormatoTexto: TTypeFormatoTexto;
+begin
+  Result := FFormatoTexto;
+end;
+
+procedure TSerializerQuery.Inicializar;
+begin
+  FConsulta := nil;
+  FRetornoJSONObject := TJSONObject.Create;
+  FRetornoJSONArray := TJSONArray.Create;
+  FRetornoString := '';
+  FColunasOculta := nil;
+  FColunasNomes := nil;
+  FColunasOrdem := nil;
+  FColunasFilhos := nil;
+  FFormatoTexto := TTypeFormatoTexto.ftNormal;
+  FFormatoDataHora := 'DD/MM/YYYY HH:NN:SS';
+  FFormatoData := 'DD/MM/YYYY';
+  FFormatoHora := 'HH:SS';
+end;
+
+procedure TSerializerQuery.LimparColunasOcultas;
+begin
+  FColunasOculta := nil;
+end;
+
+procedure TSerializerQuery.Ocultar(nome_coluna: string);
+begin
+  Ocultar([nome_coluna]);
+end;
+
+procedure TSerializerQuery.Ocultar(nomes_colunas: TArrayOfString);
+var
+  k: Integer;
+  y: Integer;
+  existente: Boolean;
+begin
+  for k := Low(nomes_colunas) to High(nomes_colunas) do begin
+    existente := False;
+    for y := Low(FColunasOculta) to High(FColunasOculta) do begin
+      if FColunasOculta[y] <> nomes_colunas[k] then
+        Continue;
+
+      existente := True;
+      Break
+    end;
+
+    if existente then
+      Continue;
+
+    SetLength(FColunasOculta, Length(FColunasOculta) + 1);
+    FColunasOculta[High(FColunasOculta)] := nomes_colunas[k];
+  end;
+end;
+
+procedure TSerializerQuery.Ordem(nomes_colunas: TArrayOfString);
+var
+  k: Integer;
+  y: Integer;
+  existente: Boolean;
+begin
+  if nomes_colunas = nil then
+    Exit;
+
+  for k := Low(nomes_colunas) to High(nomes_colunas) do begin
+    existente := False;
+    for y := Low(FColunasOrdem) to High(FColunasOrdem) do begin
+      if FColunasOrdem[y] <> nomes_colunas[k] then
+        Continue;
+
+      existente := True;
+      Break
+    end;
+
+    if existente then
+      Continue;
+
+    SetLength(FColunasOrdem, Length(FColunasOrdem) + 1);
+    FColunasOrdem[High(FColunasOrdem)] := nomes_colunas[k];
+  end;
+end;
+
+procedure TSerializerQuery.OrdernamentoFilho;
+var
+  k: Integer;
+begin
+  for k := Low(FColunasFilhos) to High(FColunasFilhos) do
+    Ordem(FColunasFilhos[k].nome_par);
+end;
+
+procedure TSerializerQuery.OrdernamentoPadrao;
+var
+  k: Integer;
+begin
+  FColunasOrdem := nil;
+
+  if (not Assigned(FConsulta)) or (FConsulta.IsEmpty) then begin
+    Inicializar;
+    Exit;
+  end;
+
+  for k := 0 to FConsulta.FieldCount - 1 do begin
+    SetLength(FColunasOrdem, Length(FColunasOrdem) + 1);
+    FColunasOrdem[High(FColunasOrdem)] := FConsulta.Fields[k].FieldName;
+  end;
+end;
+
+procedure TSerializerQuery.Ordem(nome_coluna: string);
+begin
+  Ordem([nome_coluna]);
+end;
+
+procedure TSerializerQuery.RenomearPar(nome_coluna, nome_par: string);
+begin
+  RenomearPar([nome_coluna], [nome_par]);
+end;
+
+procedure TSerializerQuery.RenomearPar(nome_coluna, nome_par: TArrayOfString);
+var
+  k: Integer;
+  y: Integer;
+  existente: Boolean;
+begin
+  for k := Low(nome_coluna) to High(nome_coluna) do begin
+    existente := False;
+    for y := Low(FColunasNomes) to High(FColunasNomes) do begin
+      if
+        (FColunasNomes[y].nome_real <> nome_coluna[k]) or
+        (FColunasNomes[y].nome_par <> nome_par[k])
+      then
+        Continue;
+
+      existente := True;
+      Break
+    end;
+
+    if existente then
+      Continue;
+
+    SetLength(FColunasNomes, Length(FColunasNomes) + 1);
+    FColunasNomes[High(FColunasNomes)].nome_real := nome_coluna[k];
+    FColunasNomes[High(FColunasNomes)].nome_par := nome_par[k];
+  end;
+end;
+
+procedure TSerializerQuery.Serializar;
+var
+  k: Integer;
+  coluna_atual: TField;
+  nome_coluna_atual: string;
+  nome_coluna_par: string;
+  ordernado: Boolean;
+  ultimo_posic: Integer;
+  filho_json: TJSONObject;
+  filho_cont_par: Integer;
+  filho_coluna: WebSerializerColunasFilhos;
+
+  function Em(valor_comparar: TFieldType; comparacoes: Array of TFieldType): Boolean;
+  var
+    i: Integer;
+  begin
+    Result := False;
+    for i := Low(comparacoes) to High(comparacoes) do begin
+      if valor_comparar = comparacoes[i] then begin
+        Result := True;
+        Break;
+      end;
+    end;
+  end;
+
+  procedure AdicionarObjetoJson(var objeto: TJSONObject; nome_chave: string; var valor: TField);
+  begin
+    if FFormatoTexto = TTypeFormatoTexto.ftMaiuscula then
+      nome_chave := AnsiUpperCase(nome_chave)
+    else if FFormatoTexto = TTypeFormatoTexto.ftMinuscula then
+      nome_chave := AnsiLowerCase(nome_chave);
+
+    if
+      Em(
+        valor.DataType,
+        [
+          ftString,
+          ftBlob,
+          ftMemo,
+          ftGraphic,
+          ftFmtMemo,
+          ftParadoxOle,
+          ftFixedChar,
+          ftWideString,
+          ftWideMemo,
+          ftLongWord,
+          ftBCD,
+          ftVariant,
+          ftBytes,
+          ftDBaseOle,
+          ftTypedBinary,
+          ftCursor,
+          ftADT,
+          ftArray,
+          ftReference,
+          ftDataSet,
+          ftOraBlob,
+          ftOraClob,
+          ftInterface,
+          ftIDispatch,
+          ftGuid,
+          ftFixedWideChar,
+          ftOraInterval,
+          ftExtended,
+          ftConnection,
+          ftParams,
+          ftStream,
+          ftTimeStampOffset,
+          ftObject,
+          ftSingle,
+          ftUnknown
+        ]
+      )
+    then begin
+      objeto.AddPair(
+        nome_chave,
+        TJSONString.Create(Encodar(nome_coluna_atual, valor.AsWideString))
+      )
+    end
+    else if
+      Em(
+        valor.DataType,
+        [
+          ftInteger,
+          ftSmallint,
+          ftByte,
+          ftSingle,
+          ftLargeint,
+          ftShortint,
+          ftWord,
+          ftFMTBcd,
+          ftBCD,
+          ftVarBytes,
+          ftAutoInc
+        ]
+      )
+    then begin
+      objeto.AddPair(
+        nome_chave,
+        TJSONNumber.Create(valor.AsInteger)
+      )
+    end
+    else if
+      Em(
+        valor.DataType,
+        [
+          ftTimeStamp,
+          ftFloat,
+          ftCurrency,
+          ftOraTimeStamp
+        ]
+      )
+    then begin
+      objeto.AddPair(
+        nome_chave,
+        TJSONNumber.Create(valor.AsFloat)
+      )
+    end
+    else if valor.DataType = ftBoolean then begin
+      objeto.AddPair(
+        nome_chave,
+        TJSONBool.Create(valor.AsBoolean)
+      )
+    end
+    else if valor.DataType = ftDateTime then begin
+      objeto.AddPair(
+        nome_chave,
+        TJSONString.Create(FormatDateTime(FormatoDataHora, valor.AsDateTime))
+      )
+    end
+    else if valor.DataType = ftDate then begin
+      objeto.AddPair(
+        nome_chave,
+        TJSONString.Create(FormatDateTime(FormatoData, valor.AsDateTime))
+      )
+    end
+    else if valor.DataType = ftDate then begin
+      objeto.AddPair(
+        nome_chave,
+        TJSONString.Create(FormatDateTime(FFormatoHora, valor.AsDateTime))
+      )
+    end;
+  end;
+begin
+  if (not Assigned(FConsulta)) or (FConsulta.IsEmpty) then begin
+    Inicializar;
+    Exit;
+  end;
+
+  if FColunasOrdem = nil then begin
+    OrdernamentoPadrao;
+    OrdernamentoFilho;
+  end;
+
+  while not FConsulta.Eof do begin
+
+  ultimo_posic := 0;
+  ordernado := False;
+  filho_cont_par := -1;
+  repeat
+    for k := 0 to FConsulta.FieldCount - 1 do begin
+      if ultimo_posic = Length(FColunasOrdem) then begin
+        ordernado := True;
+        Break;
+      end;
+
+      coluna_atual := FConsulta.Fields[k];
+      nome_coluna_atual := coluna_atual.FieldName;
+
+      filho_coluna := ColunaParFilhoUtilizada(FColunasOrdem[ultimo_posic]);
+      if (filho_coluna.nome_par <> '')  and (filho_cont_par = -1) then begin
+        filho_json := TJSONObject.Create;
+        Inc(filho_cont_par);
+      end;
+
+      if filho_coluna.nome_par <> '' then begin
+        if nome_coluna_atual <> filho_coluna.nomes_colunas_filhos[filho_cont_par] then
+          Continue;
+
+        AdicionarObjetoJson(
+          filho_json,
+          IIfStr(
+            filho_coluna.nomes_par_filhos[filho_cont_par] <> '',
+            filho_coluna.nomes_par_filhos[filho_cont_par],
+            filho_coluna.nomes_colunas_filhos[filho_cont_par]
+
+          ),
+          coluna_atual
+        );
+
+        Inc(filho_cont_par);
+
+        if filho_cont_par = Length(filho_coluna.nomes_colunas_filhos) then begin
+          FRetornoJSONObject.AddPair(filho_coluna.nome_par, filho_json);
+
+          filho_cont_par := -1;
+          Inc(ultimo_posic);
+        end;
+      end;
+
+      if filho_coluna.nome_par <> '' then
+        Continue;
+
+      if nome_coluna_atual <> FColunasOrdem[ultimo_posic] then
+        Continue;
+
+      inc(ultimo_posic);
+
+      if ColunaOcultada(nome_coluna_atual) then
+        Break;
+
+      // Campos utilizados como filhos não são exibidos no par principal
+      if ColunaFilhoUtilizada(nome_coluna_atual) then
+        Break;
+
+      nome_coluna_par := ColunaNomePar(nome_coluna_atual);
+
+      if coluna_atual.IsNull then begin
+        FRetornoJSONObject.AddPair(nome_coluna_par, '');
+        Continue;
+      end;
+
+      AdicionarObjetoJson(FRetornoJSONObject, nome_coluna_atual, coluna_atual);
+
+      if ultimo_posic = Length(FColunasOrdem) then
+        ordernado := True;
+
+      Break;
+    end;
+  until (ordernado);
+
+  end;
+
+end;
+
+procedure TSerializerQuery.SetAsJSONArray(x: TJSONArray);
+begin
+  FRetornoJSONArray := x;
+end;
+
+procedure TSerializerQuery.SetAsJSONObject(x: TJSONObject);
+begin
+  FRetornoJSONObject := x;
+end;
+
+procedure TSerializerQuery.SetAsString(x: string);
+begin
+  FRetornoString := x;
+end;
+
+procedure TSerializerQuery.SetFFormatoData(const x: string);
+begin
+  FFormatoData := x;
+end;
+
+procedure TSerializerQuery.SetFFormatoDataHora(const x: string);
+begin
+  FFormatoDataHora := x;
+end;
+
+procedure TSerializerQuery.SetFFormatoHora(const x: string);
+begin
+  FFormatoHora := x;
+end;
+
+procedure TSerializerQuery.SetFFormatoTexto(const x: TTypeFormatoTexto);
+begin
+  FFormatoTexto := x;
+end;
+
+end.

@@ -1,0 +1,17 @@
+unit Pizza.RSP.RSP37704;
+
+interface
+
+implementation
+
+uses
+  FMX.TextLayout.GPU;
+
+initialization
+
+finalization
+  // https://quality.embarcadero.com/browse/RSP-37704
+  TGPUObjectsPool.Uninitialize;
+  FMX.Types.GlobalUseGPUCanvas := True;
+
+end.

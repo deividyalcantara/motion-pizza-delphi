@@ -1,0 +1,89 @@
+unit Pizza.View.Teste;
+
+interface
+
+uses
+  System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
+  FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs,
+  Pizza.View.Frame.Sabor, FMX.Ani, FMX.Effects, FMX.Objects, FMX.Layouts,
+  FMX.ListBox, FMX.StdCtrls, FMX.Edit, FMX.Controls.Presentation;
+
+type
+  TFormTeste = class(TForm)
+    lytPizza: TLayout;
+    lytTabua: TLayout;
+    imgTabua: TImage;
+    ShadowEffect1: TShadowEffect;
+    anmRotarTabua: TFloatAnimation;
+    anmRotarTabuaExtra: TFloatAnimation;
+    anmTabuaBottom: TFloatAnimation;
+    anmTabuaBottomExtra: TFloatAnimation;
+    anmTabuaTop: TFloatAnimation;
+    anmTabuaTopExtra: TFloatAnimation;
+    frameSabor: TFrameSabor;
+    cbxAnimacao: TComboBox;
+    Layout1: TLayout;
+    Layout2: TLayout;
+    ckAutoReverse: TCheckBox;
+    ckReverse: TCheckBox;
+    ckLoop: TCheckBox;
+    ckEnabled: TCheckBox;
+    edtStart: TEdit;
+    edtStop: TEdit;
+    btnConfirmar: TButton;
+    edtX: TEdit;
+    edtY: TEdit;
+    btnStart: TButton;
+    procedure btnConfirmarClick(Sender: TObject);
+    procedure btnStartClick(Sender: TObject);
+  private
+    var
+      animacao: TFloatAnimation;
+    const
+      cPizzaBottom         = 0;
+      cPizzaBottomExtra    = 1;
+      cPizzaBottomTop      = 2;
+      cPizzaBottomTopExtra = 3;
+      cPizzaDirecao        = 4;
+      cPizzaRotar          = 5;
+  end;
+
+var
+  FormTeste: TFormTeste;
+
+implementation
+
+{$R *.fmx}
+
+procedure TFormTeste.btnConfirmarClick(Sender: TObject);
+begin
+  frameSabor.Position.X := Single(edtX.Text);
+  frameSabor.Position.Y := Single(edtY.Text);
+
+  if cbxAnimacao.ItemIndex = cPizzaBottom then
+    animacao := frameSabor.anmPizzaBottom
+  else if cbxAnimacao.ItemIndex = cPizzaBottomExtra then
+    animacao := frameSabor.anmPizzaBottomExtra
+  else if cbxAnimacao.ItemIndex = cPizzaBottomTop then
+    animacao := frameSabor.anmPizzaTop
+  else if cbxAnimacao.ItemIndex = cPizzaBottomTopExtra then
+    animacao := frameSabor.anmPizzaTop
+  else if cbxAnimacao.ItemIndex = cPizzaDirecao then
+    animacao := frameSabor.anmPizzaDirecao
+  else
+    animacao := frameSabor.anmPizzaRotar;
+
+  animacao.Enabled := ckEnabled.IsChecked;
+  animacao.Loop := ckLoop.IsChecked;
+  animacao.AutoReverse := ckAutoReverse.IsChecked;
+  animacao.Inverse := ckReverse.IsChecked;
+  animacao.StartValue := Single(edtStart.Text);
+  animacao.StopValue := Single(edtStop.Text);
+end;
+
+procedure TFormTeste.btnStartClick(Sender: TObject);
+begin
+  animacao.Start;
+end;
+
+end.

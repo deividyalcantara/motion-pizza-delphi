@@ -1,0 +1,11 @@
+unit Pizza.Interfaces.Configuracoes;
+
+interface
+
+const
+  cBaseUrl = 'http://10.4.5.101:9000/';
+  cPrefix  = 'api/v1/';
+
+implementation
+
+end.

@@ -1,0 +1,14 @@
+object FormRecheio: TFormRecheio
+  Size.Width = 69.000000000000000000
+  Size.Height = 66.000000000000000000
+  Size.PlatformDefault = False
+  object imgRecheio: TImage
+    MultiResBitmap = <
+      item
+      end>
+    Align = Client
+    Size.Width = 69.000000000000000000
+    Size.Height = 66.000000000000000000
+    Size.PlatformDefault = False
+  end
+end

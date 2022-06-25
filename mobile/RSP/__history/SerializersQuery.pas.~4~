@@ -1,0 +1,20 @@
+unit SerializerQuery;
+
+interface
+
+type
+  TSerializerQuery = class
+    public
+      procedure Ocultar(nome_coluna)
+
+
+
+
+  end;
+
+
+
+implementation
+
+
+end.

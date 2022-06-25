@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>2022/06/15 21:43:42.000.565,G:\Usuarios\Deividy\Documentos\Embarcadero\Studio\Projects\ProjectGroup1.groupproj=D:\Andamento\motion-pizza-delphi\ProjetoPizzax.groupproj</Transaction>
+    <Transaction>2022/06/16 08:26:34.000.915,D:\Andamento\motion-pizza-delphi\ProjetoPizzas.groupproj=D:\Andamento\motion-pizza-delphi\ProjetoPizzax.groupproj</Transaction>
+  </Transactions>
+	<Default.Personality>
+		<Projects ActiveProject="D:\Andamento\motion-pizza-delphi\mobile\Pizza.dproj"/>
+	</Default.Personality>
+</BorlandProject>

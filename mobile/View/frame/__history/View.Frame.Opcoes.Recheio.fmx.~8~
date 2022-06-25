@@ -1,0 +1,14 @@
+object FrameOpcoesRecheio: TFrameOpcoesRecheio
+  Size.Width = 320.000000000000000000
+  Size.Height = 92.000000000000000000
+  Size.PlatformDefault = False
+  object hsbRecheio: THorzScrollBox
+    Align = Client
+    Size.Width = 320.000000000000000000
+    Size.Height = 92.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 0
+    Viewport.Width = 320.000000000000000000
+    Viewport.Height = 92.000000000000000000
+  end
+end

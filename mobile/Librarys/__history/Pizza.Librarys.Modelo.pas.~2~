@@ -1,0 +1,10 @@
+unit Pizza.Librarys.Modelo;
+
+interface
+
+implementation
+
+const
+  lmCorBotaoPadrao = $FFA4A4A4;
+
+end.

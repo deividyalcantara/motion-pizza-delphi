@@ -1,0 +1,7 @@
+object FormBaseRecheio: TFormBaseRecheio
+  Align = Client
+  Size.Width = 472.000000000000000000
+  Size.Height = 90.000000000000000000
+  Size.PlatformDefault = False
+  OnResize = FrameResize
+end

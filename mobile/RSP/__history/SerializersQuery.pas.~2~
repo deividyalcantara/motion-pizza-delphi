@@ -1,0 +1,18 @@
+unit SerializersQuery;
+
+interface
+
+type
+  TSerializerQuery = class
+
+
+
+
+  end;
+
+
+
+implementation
+
+
+end.

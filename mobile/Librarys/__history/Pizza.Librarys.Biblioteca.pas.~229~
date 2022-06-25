@@ -1,0 +1,157 @@
+unit Pizza.Librarys.Biblioteca;
+
+interface
+
+uses
+  {$IF Defined(ANDROID)}
+  FMX.Helpers.Android,
+  Androidapi.Helpers,
+  {$ENDIF}
+
+  FMX.Objects, System.SysUtils, System.Classes, System.Net.HttpClient, Pizza.Librarys.Modelo,
+  IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient, IdHTTP,
+  FMX.Forms, REST.Client;
+
+procedure CarregarImagemURL(
+  img: TImage;
+  url: string;
+  nul: Boolean = True;
+  wid: Integer = 640;
+  hei: Integer = 480
+);
+function Porcento(porcentagem: Integer; de: Integer): Integer;
+function CarregarStreamURL(url: string): TMemoryStream;
+function IIfInt(condicao: Boolean; verdadeiro: Integer; falso: Integer): Integer;
+function IIfDbl(condicao: Boolean; verdadeiro: Double; falso: Double): Double;
+function Em(origem: Integer; valores: TArrayOfInteger): Boolean; overload;
+function Em(origem: Integer; valores: TArrayOfVariant): Boolean; overload;
+function CasasDecimais(valor: Double; casas: Integer = 2): string;
+procedure CorMobile(status_bar: Int64; navbar: Int64);
+
+implementation
+
+procedure CorMobile(status_bar: Int64; navbar: Int64);
+begin
+  {$IF Defined(IOS)}
+  FormPizza.SystemStatusBar.BackgroundColor := status_bar;
+  FormPizza.SystemStatusBar.visibility := TFormSystemStatusBar.TVisibilityMode.Visible;
+  {$ENDIF}
+
+  {$IF Defined(ANDROID)}
+    CallinUiThreadAndWaitFinishing(
+      procedure
+      begin
+        TAndroidHelper.Activity.getWindow.getDecorView.setVisibility(1);
+        TAndroidHelper.Activity.getWindow.setStatusBarColor(status_bar);
+        TAndroidHelper.Activity.getWindow.setNavigationBarColor(navbar);
+        TAndroidHelper.Activity.getWindow.getNavigationBarColor;
+      end
+    );
+  {$ENDIF}
+end;
+
+function CasasDecimais(valor: Double; casas: Integer = 2): string;
+begin
+  if casas = 0 then
+    Result := FormatFloat('#,##0', valor)
+  else if casas = 1 then
+    Result := FormatFloat('#,##0.0', valor)
+  else if casas = 2 then
+    Result := FormatFloat('#,##0.00', valor)
+  else if casas = 3 then
+    Result := FormatFloat('#,##0.000', valor)
+  else if casas = 4 then
+    Result := FormatFloat('#,##0.0000', valor)
+  else
+    Result:=FormatFloat('#,##0.00',valor);
+end;
+
+function Em(origem: Integer; valores: TArrayOfInteger): Boolean;
+var
+  i: Integer;
+begin
+  Result := False;
+  for i := Low(valores) to High(valores) do begin
+    if origem = valores[i] then begin
+      Result:=True;
+      Break;
+    end;
+  end;
+end;
+
+function Em(origem: Integer; valores: TArrayOfVariant): Boolean; overload;
+var
+  i: Integer;
+begin
+  Result := False;
+  for i := Low(valores) to High(valores) do begin
+    if origem = valores[i] then begin
+      Result:=True;
+      Break;
+    end;
+  end;
+end;
+
+function Porcento(porcentagem: Integer; de: Integer): Integer;
+begin
+  if porcentagem = 0 then begin
+    Result := 0;
+    Exit;
+  end;
+
+  Result := Round((de * porcentagem) / 100);
+end;
+
+procedure CarregarImagemURL(
+  img: TImage;
+  url: string;
+  nul: Boolean = True;
+  wid: Integer = 640;
+  hei: Integer = 480
+);
+var
+  stream: TMemoryStream;
+begin
+  if (nul) and (not img.Bitmap.IsEmpty) then
+    Exit;
+
+  stream := CarregarStreamURL(url);
+
+  if stream.Size > 0 then begin
+    stream.Position := 0;
+    img.Bitmap.LoadFromStream(stream);
+  end;
+
+  stream.Free;
+end;
+
+function CarregarStreamURL(url: string): TMemoryStream;
+var
+  stream: TMemoryStream;
+begin
+  stream := TMemoryStream.Create;
+  try
+    TDownloadURL.DownloadRawBytes(url, stream);
+  except
+    // Free no destino...
+  end;
+  Result := stream;
+end;
+
+function IIfDbl(condicao: Boolean; verdadeiro: Double; falso: Double): Double;
+begin
+  if condicao then
+    Result := Verdadeiro
+  else
+    Result := Falso;
+end;
+
+function IIfInt(condicao: Boolean; verdadeiro: Integer; falso: Integer): Integer;
+begin
+  if condicao then
+    Result := Verdadeiro
+  else
+    Result := Falso;
+end;
+
+end.

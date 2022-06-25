@@ -1,0 +1,10 @@
+unit Pizza.Interfaces.Configuracoes;
+
+interface
+
+var
+  cBaseUrl = 'http://localhost:9000/';
+
+implementation
+
+end.

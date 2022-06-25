@@ -1,0 +1,123 @@
+unit Pizza.Interfaces.TimePizza;
+
+interface
+
+uses
+  FMX.Types,
+  FMX.StdCtrls,
+  System.Classes,
+  Pizza.Librarys.Biblioteca, System.SysUtils;
+
+type
+  TTipoValorPizza = (tvpMenor, tvpIgual, tvpMaior);
+
+  TTimeValorPizza = class(TTimer)
+    private
+      FLabelTexto: TLabel;
+      FValorFinal: Double;
+      FValorAtual: Double;
+      FTipoValorPizza: TTipoValorPizza;
+      FValorIncremental: Double;
+      FValorExtra: Double;
+      FAbreviacaoMoeda: string;
+
+      procedure SetTempoEmSegundo(const Value: Integer);
+      procedure SetValorFinal(const Value: Double);
+      procedure Execucao(Sender: TObject);
+      procedure SetLabelTexto(const Value: TLabel);
+    procedure SetValorExtra(const Value: Double);
+    public
+      constructor Create(AOwner: TComponent); override;
+      procedure Iniciar;
+
+      property ValorIncremental: Double write FValorIncremental;
+      property TempoEmSegundo: Integer write SetTempoEmSegundo;
+      property LabelTexto: TLabel write SetLabelTexto;
+      property ValorFinal: Double write SetValorFinal;
+      property ValorExtra: Double write SetValorExtra;
+      property AbreviacaoMoeda: string write FAbreviacaoMoeda;
+  end;
+
+implementation
+
+
+{ TTimeValorPizza }
+
+constructor TTimeValorPizza.Create(AOwner: TComponent);
+begin
+  inherited;
+  Self.Enabled := False;
+  Self.OnTimer := Execucao;
+  Self.Interval := 30;
+  FTipoValorPizza := tvpIgual;
+  FValorIncremental := 0.10;
+  FAbreviacaoMoeda := 'R$';
+  FValorExtra := 0;
+end;
+
+procedure TTimeValorPizza.Execucao(Sender: TObject);
+begin
+  if
+    (
+      (FTipoValorPizza = tvpMaior) and
+      (CasasDecimais(FValorAtual) >= CasasDecimais(FValorFinal))
+    ) or
+    (
+      (FTipoValorPizza = tvpMenor) and
+      (CasasDecimais(FValorAtual) <= CasasDecimais(FValorFinal))
+    )
+  then begin
+    Self.Enabled := False;
+    FLabelTexto.Text := FAbreviacaoMoeda + CasasDecimais(FValorFinal);
+    Self.Destroy;
+    Exit;
+  end;
+
+  FValorAtual := IIfDbl(FTipoValorPizza = tvpMaior, FValorAtual + FValorIncremental, FValorAtual - FValorIncremental);
+  FLabelTexto.Text := FAbreviacaoMoeda + CasasDecimais(FValorAtual);
+end;
+
+procedure TTimeValorPizza.Iniciar;
+begin
+  if FTipoValorPizza = tvpIgual then
+    Exit;
+
+  Self.Enabled := True;
+end;
+
+procedure TTimeValorPizza.SetLabelTexto(const Value: TLabel);
+var
+  valor_atual: string;
+begin
+  FLabelTexto := Value;
+
+  valor_atual := StringReplace(Value.Text, '.', ',', [rfReplaceAll]);
+  valor_atual := StringReplace(valor_atual, FAbreviacaoMoeda, '', [rfReplaceAll]);
+  valor_atual := StringReplace(valor_atual, ' ', '', [rfReplaceAll]);
+
+  FValorAtual := StrToFloatDef(valor_atual, 0);
+end;
+
+procedure TTimeValorPizza.SetTempoEmSegundo(const Value: Integer);
+begin
+  Self.Interval := Value * 1000;
+end;
+
+procedure TTimeValorPizza.SetValorExtra(const Value: Double);
+begin
+  FValorAtual := FValorAtual + FValorExtra;
+end;
+
+procedure TTimeValorPizza.SetValorFinal(const Value: Double);
+begin
+  FValorFinal := Value;
+
+  if FValorFinal > FValorAtual then
+    FTipoValorPizza := tvpMaior
+  else if FValorFinal < FValorAtual then
+    FTipoValorPizza := tvpMenor
+  else
+    FTipoValorPizza := tvpIgual;
+end;
+
+end.
