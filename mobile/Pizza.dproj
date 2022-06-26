@@ -76,6 +76,12 @@
         <CfgParent>Base</CfgParent>
         <Base>true</Base>
     </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Android' and '$(Cfg_2)'=='true') or '$(Cfg_2_Android)'!=''">
+        <Cfg_2_Android>true</Cfg_2_Android>
+        <CfgParent>Cfg_2</CfgParent>
+        <Cfg_2>true</Cfg_2>
+        <Base>true</Base>
+    </PropertyGroup>
     <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win32)'!=''">
         <Cfg_2_Win32>true</Cfg_2_Win32>
         <CfgParent>Cfg_2</CfgParent>
@@ -237,21 +243,26 @@
         <AUP_WRITE_EXTERNAL_STORAGE>false</AUP_WRITE_EXTERNAL_STORAGE>
         <VerInfo_Build>1</VerInfo_Build>
         <Android_NotificationAccentColor>#000000</Android_NotificationAccentColor>
-        <Android_LauncherIcon36>Assets\img\aplicativo\Nova pasta\36x36.png</Android_LauncherIcon36>
-        <Android_LauncherIcon48>Assets\img\aplicativo\Nova pasta\48x48.png</Android_LauncherIcon48>
-        <Android_LauncherIcon72>Assets\img\aplicativo\Nova pasta\72x72.png</Android_LauncherIcon72>
-        <Android_LauncherIcon96>Assets\img\aplicativo\Nova pasta\96x96.png</Android_LauncherIcon96>
-        <Android_LauncherIcon144>Assets\img\aplicativo\Nova pasta\144x144.png</Android_LauncherIcon144>
-        <Android_LauncherIcon192>Assets\img\aplicativo\Nova pasta\192x192.png</Android_LauncherIcon192>
-        <Android_SplashImage426>Assets\img\aplicativo\Nova pasta\426x320.png</Android_SplashImage426>
-        <Android_SplashImage470>Assets\img\aplicativo\Nova pasta\470x320.png</Android_SplashImage470>
-        <Android_SplashImage640>Assets\img\aplicativo\Nova pasta\640x480.png</Android_SplashImage640>
-        <Android_SplashImage960>Assets\img\aplicativo\Nova pasta\960x720.png</Android_SplashImage960>
+        <Android_LauncherIcon36>Assets\img\aplicativo\36x36.png</Android_LauncherIcon36>
+        <Android_LauncherIcon48>Assets\img\aplicativo\48x48.png</Android_LauncherIcon48>
+        <Android_LauncherIcon72>Assets\img\aplicativo\72x72.png</Android_LauncherIcon72>
+        <Android_LauncherIcon96>Assets\img\aplicativo\96x96.png</Android_LauncherIcon96>
+        <Android_LauncherIcon144>Assets\img\aplicativo\144x144.png</Android_LauncherIcon144>
+        <Android_LauncherIcon192>Assets\img\aplicativo\192x192.png</Android_LauncherIcon192>
+        <Android_SplashImage426>Assets\img\aplicativo\426x320.png</Android_SplashImage426>
+        <Android_SplashImage470>Assets\img\aplicativo\470x320.png</Android_SplashImage470>
+        <Android_SplashImage640>Assets\img\aplicativo\640x480.png</Android_SplashImage640>
+        <Android_SplashImage960>Assets\img\aplicativo\960x720.png</Android_SplashImage960>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
         <DCC_RemoteDebug>false</DCC_RemoteDebug>
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+        <Icon_MainIcon>Pizza_Icon.ico</Icon_MainIcon>
+        <UWP_DelphiLogo44>Assets\img\aplicativo\48x48.png</UWP_DelphiLogo44>
+        <UWP_DelphiLogo150>Assets\img\aplicativo\192x192.png</UWP_DelphiLogo150>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win64)'!=''">
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
@@ -263,9 +274,28 @@
         <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
         <DCC_DebugInformation>0</DCC_DebugInformation>
     </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_2_Android)'!=''">
+        <VerInfo_Build>1</VerInfo_Build>
+        <Android_LauncherIcon36>Assets\img\aplicativo\36x36.png</Android_LauncherIcon36>
+        <Android_LauncherIcon48>Assets\img\aplicativo\48x48.png</Android_LauncherIcon48>
+        <Android_LauncherIcon72>Assets\img\aplicativo\72x72.png</Android_LauncherIcon72>
+        <Android_LauncherIcon96>Assets\img\aplicativo\96x96.png</Android_LauncherIcon96>
+        <Android_LauncherIcon144>Assets\img\aplicativo\144x144.png</Android_LauncherIcon144>
+        <Android_LauncherIcon192>Assets\img\aplicativo\192x192.png</Android_LauncherIcon192>
+        <Android_SplashImage426>Assets\img\aplicativo\426x320.png</Android_SplashImage426>
+        <Android_SplashImage470>Assets\img\aplicativo\470x320.png</Android_SplashImage470>
+        <Android_SplashImage640>Assets\img\aplicativo\640x480.png</Android_SplashImage640>
+        <Android_SplashImage960>Assets\img\aplicativo\960x720.png</Android_SplashImage960>
+        <Android_NotificationAccentColor>#000000</Android_NotificationAccentColor>
+    </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+        <Icon_MainIcon>Pizza_Icon1.ico</Icon_MainIcon>
+        <UWP_DelphiLogo44>Assets\img\aplicativo\48x48.png</UWP_DelphiLogo44>
+        <UWP_DelphiLogo150>Assets\img\aplicativo\192x192.png</UWP_DelphiLogo150>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
@@ -457,6 +487,34 @@
                 <DeployFile LocalName="Assets\font\PizzaRegular.ttf" Configuration="Debug" Class="ProjectFile">
                     <Platform Name="Android64">
                         <RemoteDir>.\assets\internal\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Assets\img\aplicativo\192x192.png" Configuration="Debug" Class="UWP_DelphiLogo150">
+                    <Platform Name="Win32">
+                        <RemoteDir>Assets\</RemoteDir>
+                        <RemoteName>Logo150x150.png</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Assets\img\aplicativo\192x192.png" Configuration="Release" Class="UWP_DelphiLogo150">
+                    <Platform Name="Win32">
+                        <RemoteDir>Assets\</RemoteDir>
+                        <RemoteName>Logo150x150.png</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Assets\img\aplicativo\48x48.png" Configuration="Debug" Class="UWP_DelphiLogo44">
+                    <Platform Name="Win32">
+                        <RemoteDir>Assets\</RemoteDir>
+                        <RemoteName>Logo44x44.png</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Assets\img\aplicativo\48x48.png" Configuration="Release" Class="UWP_DelphiLogo44">
+                    <Platform Name="Win32">
+                        <RemoteDir>Assets\</RemoteDir>
+                        <RemoteName>Logo44x44.png</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>

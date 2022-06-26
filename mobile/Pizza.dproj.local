@@ -77,7 +77,7 @@
     <Transaction>2022/06/19 10:51:46.000.940,=D:\Andamento\motion-pizza-delphi\mobile\Assets\font\PizzaRegular.ttf</Transaction>
   </Transactions>
 	<ActiveMobileDevice>
-		<NoProfile iOSSimulator="iPhone5" Android64="" Android="d9cbcac30406"/>
+		<NoProfile iOSSimulator="iPhone5" Android64="d9cbcac30406" Android="d9cbcac30406"/>
 	</ActiveMobileDevice>
 	<ProjectSortOrder AutoSort="0" SortType="0">
     <File Path="annotation-1.2.0.dex.jar"/>
